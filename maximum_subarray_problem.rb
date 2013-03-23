@@ -3,8 +3,9 @@ require_relative 'functional'
 class Algorithms
   extend RecursionTracker
 
+  # Using divide and conquer.
   def find_maximum_subarray(arr, low, high)
-    if high == low
+    if high == low or arr.length == 0
       return low, high, arr[low]
     else
       mid = (low + high)/2
@@ -23,7 +24,7 @@ class Algorithms
       end
     end
   end
-  recursion_tracker(:find_maximum_subarray)
+  #recursion_tracker(:find_maximum_subarray)
 
   def find_maximum_crossing_subarray(arr, low, mid, high)
     left_sum = right_sum = -Float::INFINITY
@@ -46,11 +47,53 @@ class Algorithms
     end
     return max_left, max_right, left_sum + right_sum
   end
+
+  def find_maximum_subarray_brute(arr)
+    if arr.length == 1
+      return 0, 0, arr[0]
+    end
+    left_bound = right_bound = 0
+    (0...arr.length).each do |i|
+      (i...arr.length).each do |j|
+        if arr[i..j].inject(:+) > arr[left_bound..right_bound].inject(:+)
+          left_bound = i
+          right_bound = j
+        end
+      end
+    end
+    return left_bound, right_bound, arr[left_bound..right_bound].inject(:+)
+  end
 end
 
 
-a = 10.times.map { Random.rand(40) * [-1, -1][Random.rand(2)] }
-puts "----------- testing find_maximum_crossing_subarray -----------"
-puts a.inspect
-puts Algorithms.new.find_maximum_subarray(a, 0, a.length-1).inspect
+a = 100.times.map { Random.rand(40) * [1, -1][Random.rand(2)] }
+#puts "----------- testing find_maximum_crossing_subarray -----------"
+#puts a.inspect
+#puts Algorithms.new.find_maximum_subarray(a, 0, a.length-1).inspect
+#puts "------------------------------------------------------------\n"
+#
+
+#puts "----------- testing find_maximum_subarray_brute ------------"
+#puts a.inspect
+#puts Algorithms.new.find_maximum_subarray_brute(a).inspect
+#puts "------------------------------------------------------------\n"
+
+puts "----------- testing for fastest algorithms for input n ------------"
+(1..100).each do |i|
+  a = i.times.map { Random.rand(40) * [1, -1][Random.rand(2)] }
+  start = Time.now
+  Algorithms.new.find_maximum_subarray(a, 0, a.length - 1)
+  finish = Time.now
+  elapsed_divide = (finish - start) * (10 ** 6)
+  start = Time.now
+  Algorithms.new.find_maximum_subarray_brute(a)
+  finish = Time.now
+  elapsed_brute = (finish - start) * (10 ** 6)
+  print "n: " + i.inspect
+  print " divide_time: " + elapsed_divide.inspect + "ms"
+  print " brute_time: " + elapsed_brute.inspect + "ms"
+  print " fastest: " + ((elapsed_brute <= elapsed_divide)? "Brute": "Divide")
+  print "\n"
+end
+
 puts "------------------------------------------------------------\n"
